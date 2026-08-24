@@ -3,33 +3,61 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ultimate GitHub Explorer</title>
+    <title>Gudang Takarir Explorer</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        .file-item:hover { background-color: #f3f4f6; }
-        pre { border-radius: 0.5rem; max-height: 600px; overflow: auto; font-size: 13px; }
-        .viewer-container { min-height: 500px; width: 100%; border: none; }
-        .prose img { max-width: 100%; height: auto; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .file-item:hover { background-color: #f8fafc; }
+        pre { border-radius: 0.5rem; max-height: 600px; overflow: auto; font-size: 13px; position: relative; }
+        .viewer-container { min-height: 600px; width: 100%; border: none; background: white; }
+        .copy-btn { position: absolute; top: 10px; right: 10px; z-index: 10; opacity: 0; transition: 0.3s; }
+        pre:hover .copy-btn { opacity: 1; }
+        .custom-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
     </style>
 </head>
-<body class="bg-gray-100 min-h-screen p-2 md:p-8">
+<body class="bg-slate-50 min-h-screen pb-10">
 
-    <div class="max-w-5xl mx-auto">
-        <!-- Header -->
-        <div class="bg-white rounded-t-xl border border-gray-200 p-4 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div id="breadcrumbs" class="flex items-center text-sm font-medium text-gray-600 overflow-x-auto whitespace-nowrap">
-                <!-- Breadcrumbs -->
+    <!-- Navbar / Header -->
+    <nav class="bg-white border-b border-slate-200 sticky top-0 z-50">
+        <div class="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-2 cursor-pointer" onclick="loadFolder('')">
+                <div class="bg-blue-600 p-2 rounded-lg">
+                    <i class="fas fa-database text-white"></i>
+                </div>
+                <span class="font-bold text-slate-800 text-lg hidden sm:block">Gudang Takarir</span>
             </div>
-            <div id="repo-info" class="text-xs font-mono text-gray-400"></div>
+            
+            <!-- Search Bar -->
+            <div class="relative w-1/2 max-w-xs">
+                <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400">
+                    <i class="fas fa-search"></i>
+                </span>
+                <input type="text" id="search-input" onkeyup="filterFiles()" 
+                       class="block w-full pl-10 pr-3 py-2 border border-slate-200 rounded-md leading-5 bg-slate-100 placeholder-slate-500 focus:outline-none focus:bg-white focus:ring-1 focus:ring-blue-500 sm:text-sm" 
+                       placeholder="Cari file...">
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-5xl mx-auto px-4 mt-6">
+        <!-- Breadcrumbs & Repo Info -->
+        <div class="bg-white rounded-t-xl border border-slate-200 p-4 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div id="breadcrumbs" class="flex items-center text-sm font-medium text-slate-500 overflow-x-auto whitespace-nowrap custom-scroll">
+                <!-- Breadcrumbs content -->
+            </div>
+            <div id="limit-info" class="text-[10px] uppercase tracking-wider font-bold text-slate-400"></div>
         </div>
 
         <!-- Main Content -->
-        <div class="bg-white border-x border-b border-gray-200 rounded-b-xl shadow-sm overflow-hidden">
+        <div class="bg-white border-x border-b border-slate-200 rounded-b-xl shadow-sm overflow-hidden min-h-[400px]">
             <div id="content-area">
                 <div class="p-20 text-center">
-                    <i class="fas fa-spinner fa-spin text-3xl text-gray-300"></i>
+                    <i class="fas fa-circle-notch fa-spin text-3xl text-blue-500"></i>
+                    <p class="mt-4 text-slate-500">Menghubungkan ke GitHub...</p>
                 </div>
             </div>
         </div>
@@ -37,7 +65,6 @@
 
     <!-- Scripts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
-    <!-- Tambahkan autoloader prism untuk support bahasa lebih banyak -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/4.3.0/marked.min.js"></script>
 
@@ -48,7 +75,6 @@
             branch: 'main'               
         };
 
-        // Kategori File
         const EXT = {
             image: ['jpg', 'jpeg', 'png', 'gif', 'svg', 'webp', 'ico'],
             video: ['mp4', 'webm', 'ogg'],
@@ -58,37 +84,56 @@
             code: ['html', 'css', 'js', 'json', 'md', 'php', 'py', 'java', 'c', 'cpp', 'sql', 'sh', 'txt', 'xml', 'yaml']
         };
 
+        let currentData = [];
+
         async function loadFolder(path = "") {
             updateBreadcrumbs(path);
             const contentArea = document.getElementById('content-area');
-            contentArea.innerHTML = '<div class="p-10 text-center"><i class="fas fa-spinner fa-spin"></i> Loading...</div>';
+            contentArea.innerHTML = '<div class="p-20 text-center"><i class="fas fa-circle-notch fa-spin text-blue-500"></i></div>';
 
             try {
                 const res = await fetch(`https://api.github.com/repos/${CONFIG.username}/${CONFIG.repo}/contents/${path}`);
-                const data = await res.json();
+                
+                // Cek Rate Limit
+                const remaining = res.headers.get('x-ratelimit-remaining');
+                document.getElementById('limit-info').innerText = `Sisa Limit API: ${remaining}`;
 
+                const data = await res.json();
+                if (res.status === 403) throw new Error("Limit API tercapai. Silakan coba lagi nanti.");
                 if (!Array.isArray(data)) throw new Error("Data bukan folder");
 
-                data.sort((a, b) => (b.type === 'dir') - (a.type === 'dir'));
-
-                let html = `<div class="divide-y divide-gray-100">`;
-                data.forEach(item => {
-                    if (item.name === 'index.html' && path === "") return;
-                    const icon = item.type === 'dir' ? '<i class="fas fa-folder text-yellow-500"></i>' : getFileIcon(item.name);
-                    const action = item.type === 'dir' ? `loadFolder('${item.path}')` : `viewFile('${item.path}', '${item.download_url}')`;
-
-                    html += `
-                        <div onclick="${action}" class="file-item p-4 flex items-center cursor-pointer transition">
-                            <span class="w-8 text-center">${icon}</span>
-                            <span class="ml-2 text-blue-600 hover:underline truncate">${item.name}</span>
-                            <span class="ml-auto text-[10px] text-gray-400 font-mono hidden md:block">${item.size ? (item.size/1024).toFixed(1)+' KB' : 'FOLDER'}</span>
-                        </div>`;
-                });
-                html += `</div>`;
-                contentArea.innerHTML = html;
+                currentData = data;
+                renderFileList(data);
             } catch (e) {
-                contentArea.innerHTML = `<div class="p-10 text-red-500">Error: ${e.message}</div>`;
+                contentArea.innerHTML = `
+                    <div class="p-20 text-center">
+                        <i class="fas fa-exclamation-triangle text-red-500 text-4xl mb-4"></i>
+                        <p class="text-slate-800 font-bold">${e.message}</p>
+                        <p class="text-slate-500 text-sm mt-2">Gunakan VPN atau tunggu 1 jam jika terkena limit.</p>
+                        <button onclick="location.reload()" class="mt-6 bg-blue-600 text-white px-6 py-2 rounded-lg">Coba Lagi</button>
+                    </div>`;
             }
+        }
+
+        function renderFileList(data) {
+            const contentArea = document.getElementById('content-area');
+            data.sort((a, b) => (b.type === 'dir') - (a.type === 'dir'));
+
+            let html = `<div class="divide-y divide-slate-100" id="files-container">`;
+            data.forEach(item => {
+                if (item.name === 'index.html' && item.path === 'index.html') return;
+                const icon = item.type === 'dir' ? '<i class="fas fa-folder text-amber-400"></i>' : getFileIcon(item.name);
+                const action = item.type === 'dir' ? `loadFolder('${item.path}')` : `viewFile('${item.path}', '${item.download_url}')`;
+
+                html += `
+                    <div onclick="${action}" class="file-item p-4 flex items-center cursor-pointer transition group">
+                        <span class="w-8 text-center text-lg">${icon}</span>
+                        <span class="ml-3 text-slate-700 group-hover:text-blue-600 font-medium truncate">${item.name}</span>
+                        <span class="ml-auto text-[11px] text-slate-400 font-mono hidden md:block uppercase">${item.type === 'dir' ? 'Folder' : item.name.split('.').pop()}</span>
+                    </div>`;
+            });
+            html += `</div>`;
+            contentArea.innerHTML = data.length === 0 ? '<div class="p-20 text-center text-slate-400 font-medium">Folder Kosong</div>' : html;
         }
 
         async function viewFile(path, url) {
@@ -96,82 +141,84 @@
             const ext = path.split('.').pop().toLowerCase();
             updateBreadcrumbs(path);
             
-            contentArea.innerHTML = '<div class="p-10 text-center"><i class="fas fa-circle-notch fa-spin"></i> Menyiapkan Viewer...</div>';
+            contentArea.innerHTML = '<div class="p-20 text-center"><i class="fas fa-circle-notch fa-spin text-blue-500"></i><p class="mt-2 text-slate-500">Membuka File...</p></div>';
 
             let viewerHtml = "";
 
-            // 1. IMAGE
             if (EXT.image.includes(ext)) {
-                viewerHtml = `<div class="p-4 bg-gray-50 flex justify-center"><img src="${url}" class="max-w-full shadow-md rounded"></div>`;
+                viewerHtml = `<div class="p-6 bg-slate-100 flex justify-center"><img src="${url}" class="max-w-full shadow-2xl rounded-lg"></div>`;
             } 
-            // 2. PDF
             else if (EXT.pdf.includes(ext)) {
-                viewerHtml = `<iframe src="${url}" class="viewer-container" style="height: 80vh"></iframe>`;
+                viewerHtml = `<iframe src="${url}" class="viewer-container" style="height: 85vh"></iframe>`;
             }
-            // 3. VIDEO
             else if (EXT.video.includes(ext)) {
-                viewerHtml = `<div class="p-4 bg-black flex justify-center"><video controls class="max-w-full"><source src="${url}" type="video/${ext}"></video></div>`;
+                viewerHtml = `<div class="p-4 bg-black flex justify-center"><video controls class="w-full max-w-3xl"><source src="${url}" type="video/${ext}"></video></div>`;
             }
-            // 4. AUDIO
             else if (EXT.audio.includes(ext)) {
-                viewerHtml = `<div class="p-10 bg-gray-50 flex justify-center"><audio controls src="${url}"></audio></div>`;
+                viewerHtml = `<div class="p-20 bg-slate-50 flex justify-center"><audio controls src="${url}" class="w-full max-w-md"></audio></div>`;
             }
-            // 5. OFFICE (Word, Excel, PPT)
             else if (EXT.office.includes(ext)) {
                 const officeUrl = `https://view.officeapps.live.com/op/view.aspx?src=${encodeURIComponent(url)}`;
-                viewerHtml = `<iframe src="${officeUrl}" class="viewer-container" style="height: 80vh"></iframe>`;
+                viewerHtml = `<iframe src="${officeUrl}" class="viewer-container" style="height: 85vh"></iframe>`;
             }
-            // 6. TEXT / CODE / MARKDOWN
             else {
                 try {
                     const res = await fetch(url);
                     const text = await res.text();
-
                     if (ext === 'md') {
-                        viewerHtml = `<div class="prose max-w-none p-8">${marked.parse(text)}</div>`;
+                        viewerHtml = `<div class="prose max-w-none p-10 bg-white border-t">${marked.parse(text)}</div>`;
                     } else {
-                        viewerHtml = `<pre class="m-4 line-numbers"><code class="language-${ext}">${escapeHTML(text)}</code></pre>`;
+                        viewerHtml = `
+                        <div class="relative group">
+                            <button onclick="copyToClipboard(this)" class="copy-btn bg-slate-700 text-white text-xs px-3 py-1.5 rounded-md hover:bg-slate-600">
+                                <i class="far fa-copy mr-1"></i> Copy
+                            </button>
+                            <pre class="m-0 border-0 rounded-none line-numbers"><code class="language-${ext}">${escapeHTML(text)}</code></pre>
+                        </div>`;
                     }
                 } catch (e) {
-                    viewerHtml = `<div class="p-20 text-center">
-                        <p class="mb-4 text-gray-500">Format file ini mungkin biner atau tidak dapat ditampilkan langsung.</p>
-                        <a href="${url}" class="bg-blue-600 text-white px-6 py-2 rounded-lg">Download File</a>
-                    </div>`;
+                    viewerHtml = `<div class="p-20 text-center"><p class="mb-4">File biner tidak dapat ditampilkan.</p><a href="${url}" class="bg-blue-600 text-white px-6 py-2 rounded-lg">Download File</a></div>`;
                 }
             }
 
             contentArea.innerHTML = `
-                <div class="bg-gray-50 p-3 border-b border-gray-200 flex justify-between items-center">
-                    <span class="text-xs font-mono truncate mr-4">${path}</span>
+                <div class="bg-slate-50 p-3 border-b border-slate-200 flex justify-between items-center px-4 sticky top-16 z-40">
+                    <span class="text-xs font-mono text-slate-500 truncate mr-4"><i class="far fa-file-alt mr-2"></i>${path}</span>
                     <div class="flex gap-2">
-                        <a href="${url}" download class="text-xs bg-white border border-gray-300 px-3 py-1 rounded hover:bg-gray-100">Download</a>
-                        <button onclick="loadFolder('${getParent(path)}')" class="text-xs bg-gray-800 text-white px-3 py-1 rounded">Tutup</button>
+                        <a href="${url}" download class="text-[11px] font-bold bg-white border border-slate-200 px-3 py-1.5 rounded-md hover:bg-slate-50 shadow-sm transition">DOWNLOAD</a>
+                        <button onclick="loadFolder('${getParent(path)}')" class="text-[11px] font-bold bg-slate-800 text-white px-3 py-1.5 rounded-md hover:bg-slate-700 shadow-sm transition">TUTUP</button>
                     </div>
                 </div>
-                <div class="animate-fadeIn">${viewerHtml}</div>
+                <div class="animate-in fade-in duration-500">${viewerHtml}</div>
             `;
             Prism.highlightAll();
         }
 
-        // Helper: Ikon Berdasarkan Ekstensi
+        function filterFiles() {
+            const query = document.getElementById('search-input').value.toLowerCase();
+            const filtered = currentData.filter(item => item.name.toLowerCase().includes(query));
+            renderFileList(filtered);
+        }
+
         function getFileIcon(name) {
             const ext = name.split('.').pop().toLowerCase();
             if (EXT.image.includes(ext)) return '<i class="fas fa-file-image text-purple-500"></i>';
-            if (EXT.video.includes(ext)) return '<i class="fas fa-file-video text-red-500"></i>';
-            if (EXT.pdf.includes(ext)) return '<i class="fas fa-file-pdf text-red-600"></i>';
-            if (EXT.office.includes(ext)) return '<i class="fas fa-file-word text-blue-700"></i>';
-            if (EXT.code.includes(ext)) return '<i class="fas fa-file-code text-gray-700"></i>';
-            return '<i class="fas fa-file text-gray-400"></i>';
+            if (EXT.video.includes(ext)) return '<i class="fas fa-file-video text-rose-500"></i>';
+            if (EXT.pdf.includes(ext)) return '<i class="fas fa-file-pdf text-red-500"></i>';
+            if (EXT.office.includes(ext)) return '<i class="fas fa-file-word text-blue-600"></i>';
+            if (EXT.code.includes(ext)) return '<i class="fas fa-file-code text-slate-600"></i>';
+            return '<i class="fas fa-file-alt text-slate-400"></i>';
         }
 
         function updateBreadcrumbs(path) {
             const container = document.getElementById('breadcrumbs');
             const parts = path.split('/').filter(p => p !== "");
-            let html = `<span class="cursor-pointer hover:text-blue-600" onclick="loadFolder('')"><i class="fas fa-home"></i> Root</span>`;
+            let html = `<span class="cursor-pointer hover:text-blue-600 flex items-center" onclick="loadFolder('')"><i class="fas fa-home text-base"></i></span>`;
             let current = "";
             parts.forEach(p => {
                 current += (current ? "/" : "") + p;
-                html += ` <span class="mx-2 text-gray-300">/</span> <span class="cursor-pointer hover:text-blue-600" onclick="loadFolder('${current}')">${p}</span>`;
+                html += ` <span class="mx-2 text-slate-300"><i class="fas fa-chevron-right text-[10px]"></i></span> 
+                          <span class="cursor-pointer hover:text-blue-600 transition" onclick="loadFolder('${current}')">${p}</span>`;
             });
             container.innerHTML = html;
         }
@@ -182,6 +229,14 @@
 
         function escapeHTML(str) {
             return str.replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+        }
+
+        function copyToClipboard(btn) {
+            const code = btn.nextElementSibling.innerText;
+            navigator.clipboard.writeText(code).then(() => {
+                btn.innerHTML = '<i class="fas fa-check text-green-400"></i> Copied!';
+                setTimeout(() => btn.innerHTML = '<i class="far fa-copy mr-1"></i> Copy', 2000);
+            });
         }
 
         loadFolder("");

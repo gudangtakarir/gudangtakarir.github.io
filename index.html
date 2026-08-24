@@ -3,145 +3,187 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GitHub File Explorer & Viewer</title>
+    <title>Ultimate GitHub Explorer</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        .file-item:hover { background-color: #f9fafb; }
-        pre { border-radius: 0.5rem; max-height: 500px; overflow: auto; }
+        .file-item:hover { background-color: #f3f4f6; }
+        pre { border-radius: 0.5rem; max-height: 600px; overflow: auto; font-size: 13px; }
+        .viewer-container { min-height: 500px; width: 100%; border: none; }
+        .prose img { max-width: 100%; height: auto; }
     </style>
 </head>
-<body class="bg-gray-100 min-h-screen p-4 md:p-8">
+<body class="bg-gray-100 min-h-screen p-2 md:p-8">
 
-    <div class="max-w-4xl mx-auto">
-        <!-- Header & Breadcrumbs -->
-        <div class="bg-white rounded-t-xl border border-gray-200 p-4 shadow-sm">
-            <div id="breadcrumbs" class="flex items-center text-sm font-medium text-gray-500 overflow-x-auto whitespace-nowrap">
-                <!-- Breadcrumbs akan muncul di sini -->
+    <div class="max-w-5xl mx-auto">
+        <!-- Header -->
+        <div class="bg-white rounded-t-xl border border-gray-200 p-4 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div id="breadcrumbs" class="flex items-center text-sm font-medium text-gray-600 overflow-x-auto whitespace-nowrap">
+                <!-- Breadcrumbs -->
             </div>
+            <div id="repo-info" class="text-xs font-mono text-gray-400"></div>
         </div>
 
-        <!-- Main Content (File List atau File Viewer) -->
+        <!-- Main Content -->
         <div class="bg-white border-x border-b border-gray-200 rounded-b-xl shadow-sm overflow-hidden">
             <div id="content-area">
-                <div class="p-8 text-center text-gray-500 italic">Memuat data...</div>
+                <div class="p-20 text-center">
+                    <i class="fas fa-spinner fa-spin text-3xl text-gray-300"></i>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Scripts untuk API, Rendering, dan Highlight -->
+    <!-- Scripts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <!-- Tambahkan autoloader prism untuk support bahasa lebih banyak -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/4.3.0/marked.min.js"></script>
 
     <script>
-        // --- KONFIGURASI ---
         const CONFIG = {
-            username: 'gudangtakarir', // Ganti dengan username Anda
-            repo: 'gudangtakarir.github.io',     // Ganti dengan nama repo Anda
-            branch: 'main'               // Biasanya 'main' atau 'master'
+            username: 'gudangtakarir', 
+            repo: 'gudangtakarir.github.io',     
+            branch: 'main'               
         };
 
-        let currentPath = "";
+        // Kategori File
+        const EXT = {
+            image: ['jpg', 'jpeg', 'png', 'gif', 'svg', 'webp', 'ico'],
+            video: ['mp4', 'webm', 'ogg'],
+            audio: ['mp3', 'wav', 'ogg'],
+            pdf: ['pdf'],
+            office: ['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx'],
+            code: ['html', 'css', 'js', 'json', 'md', 'php', 'py', 'java', 'c', 'cpp', 'sql', 'sh', 'txt', 'xml', 'yaml']
+        };
 
-        // Fungsi utama untuk memuat isi folder
         async function loadFolder(path = "") {
-            currentPath = path;
             updateBreadcrumbs(path);
             const contentArea = document.getElementById('content-area');
-            contentArea.innerHTML = '<div class="p-8 text-center">Memproses...</div>';
+            contentArea.innerHTML = '<div class="p-10 text-center"><i class="fas fa-spinner fa-spin"></i> Loading...</div>';
 
             try {
-                const response = await fetch(`https://api.github.com/repos/${CONFIG.username}/${CONFIG.repo}/contents/${path}`);
-                const data = await response.json();
+                const res = await fetch(`https://api.github.com/repos/${CONFIG.username}/${CONFIG.repo}/contents/${path}`);
+                const data = await res.json();
 
-                let html = `<ul class="divide-y divide-gray-100">`;
-                
-                // Urutkan: Folder dulu baru File
+                if (!Array.isArray(data)) throw new Error("Data bukan folder");
+
                 data.sort((a, b) => (b.type === 'dir') - (a.type === 'dir'));
 
+                let html = `<div class="divide-y divide-gray-100">`;
                 data.forEach(item => {
-                    if (item.name === 'index.html' && path === "") return; // Sembunyikan index utama
-
-                    const icon = item.type === 'dir' ? '📁' : '📄';
-                    const action = item.type === 'dir' 
-                        ? `onclick="loadFolder('${item.path}')"` 
-                        : `onclick="viewFile('${item.path}', '${item.download_url}')"`;
+                    if (item.name === 'index.html' && path === "") return;
+                    const icon = item.type === 'dir' ? '<i class="fas fa-folder text-yellow-500"></i>' : getFileIcon(item.name);
+                    const action = item.type === 'dir' ? `loadFolder('${item.path}')` : `viewFile('${item.path}', '${item.download_url}')`;
 
                     html += `
-                        <li class="file-item p-4 flex items-center cursor-pointer transition" ${action}>
-                            <span class="mr-3 text-xl">${icon}</span>
-                            <span class="text-blue-600 font-medium hover:underline">${item.name}</span>
-                            <span class="ml-auto text-xs text-gray-400 uppercase font-mono">${item.type}</span>
-                        </li>`;
+                        <div onclick="${action}" class="file-item p-4 flex items-center cursor-pointer transition">
+                            <span class="w-8 text-center">${icon}</span>
+                            <span class="ml-2 text-blue-600 hover:underline truncate">${item.name}</span>
+                            <span class="ml-auto text-[10px] text-gray-400 font-mono hidden md:block">${item.size ? (item.size/1024).toFixed(1)+' KB' : 'FOLDER'}</span>
+                        </div>`;
                 });
-                html += `</ul>`;
+                html += `</div>`;
                 contentArea.innerHTML = html;
-
-            } catch (error) {
-                contentArea.innerHTML = `<div class="p-8 text-red-500 text-center text-sm">Gagal memuat: ${error.message}</div>`;
+            } catch (e) {
+                contentArea.innerHTML = `<div class="p-10 text-red-500">Error: ${e.message}</div>`;
             }
         }
 
-        // Fungsi untuk melihat isi file
-        async function viewFile(path, downloadUrl) {
+        async function viewFile(path, url) {
             const contentArea = document.getElementById('content-area');
             const ext = path.split('.').pop().toLowerCase();
             updateBreadcrumbs(path);
+            
+            contentArea.innerHTML = '<div class="p-10 text-center"><i class="fas fa-circle-notch fa-spin"></i> Menyiapkan Viewer...</div>';
 
-            contentArea.innerHTML = '<div class="p-8 text-center">Membaca isi file...</div>';
+            let viewerHtml = "";
 
-            try {
-                const response = await fetch(downloadUrl);
-                const text = await response.text();
-
-                let renderedContent = "";
-                if (ext === 'md') {
-                    renderedContent = `<div class="prose max-w-none p-6">${marked.parse(text)}</div>`;
-                } else if (['jpg', 'png', 'gif', 'svg'].includes(ext)) {
-                    renderedContent = `<div class="flex justify-center p-6 bg-gray-50"><img src="${downloadUrl}" class="max-w-full shadow-lg rounded"></div>`;
-                } else {
-                    // Gunakan Prism untuk highlight kode
-                    renderedContent = `<pre class="m-4"><code class="language-${ext}">${escapeHTML(text)}</code></pre>`;
-                }
-
-                contentArea.innerHTML = `
-                    <div class="bg-gray-50 p-3 border-b border-gray-200 flex justify-between items-center">
-                        <span class="text-xs font-mono text-gray-500">${path}</span>
-                        <button onclick="loadFolder('${getParentPath(path)}')" class="text-xs bg-gray-200 hover:bg-gray-300 px-3 py-1 rounded">Kembali</button>
-                    </div>
-                    ${renderedContent}
-                `;
-                Prism.highlightAll();
-            } catch (error) {
-                contentArea.innerHTML = `<div class="p-8 text-red-500">Gagal membaca file.</div>`;
+            // 1. IMAGE
+            if (EXT.image.includes(ext)) {
+                viewerHtml = `<div class="p-4 bg-gray-50 flex justify-center"><img src="${url}" class="max-w-full shadow-md rounded"></div>`;
+            } 
+            // 2. PDF
+            else if (EXT.pdf.includes(ext)) {
+                viewerHtml = `<iframe src="${url}" class="viewer-container" style="height: 80vh"></iframe>`;
             }
+            // 3. VIDEO
+            else if (EXT.video.includes(ext)) {
+                viewerHtml = `<div class="p-4 bg-black flex justify-center"><video controls class="max-w-full"><source src="${url}" type="video/${ext}"></video></div>`;
+            }
+            // 4. AUDIO
+            else if (EXT.audio.includes(ext)) {
+                viewerHtml = `<div class="p-10 bg-gray-50 flex justify-center"><audio controls src="${url}"></audio></div>`;
+            }
+            // 5. OFFICE (Word, Excel, PPT)
+            else if (EXT.office.includes(ext)) {
+                const officeUrl = `https://view.officeapps.live.com/op/view.aspx?src=${encodeURIComponent(url)}`;
+                viewerHtml = `<iframe src="${officeUrl}" class="viewer-container" style="height: 80vh"></iframe>`;
+            }
+            // 6. TEXT / CODE / MARKDOWN
+            else {
+                try {
+                    const res = await fetch(url);
+                    const text = await res.text();
+
+                    if (ext === 'md') {
+                        viewerHtml = `<div class="prose max-w-none p-8">${marked.parse(text)}</div>`;
+                    } else {
+                        viewerHtml = `<pre class="m-4 line-numbers"><code class="language-${ext}">${escapeHTML(text)}</code></pre>`;
+                    }
+                } catch (e) {
+                    viewerHtml = `<div class="p-20 text-center">
+                        <p class="mb-4 text-gray-500">Format file ini mungkin biner atau tidak dapat ditampilkan langsung.</p>
+                        <a href="${url}" class="bg-blue-600 text-white px-6 py-2 rounded-lg">Download File</a>
+                    </div>`;
+                }
+            }
+
+            contentArea.innerHTML = `
+                <div class="bg-gray-50 p-3 border-b border-gray-200 flex justify-between items-center">
+                    <span class="text-xs font-mono truncate mr-4">${path}</span>
+                    <div class="flex gap-2">
+                        <a href="${url}" download class="text-xs bg-white border border-gray-300 px-3 py-1 rounded hover:bg-gray-100">Download</a>
+                        <button onclick="loadFolder('${getParent(path)}')" class="text-xs bg-gray-800 text-white px-3 py-1 rounded">Tutup</button>
+                    </div>
+                </div>
+                <div class="animate-fadeIn">${viewerHtml}</div>
+            `;
+            Prism.highlightAll();
+        }
+
+        // Helper: Ikon Berdasarkan Ekstensi
+        function getFileIcon(name) {
+            const ext = name.split('.').pop().toLowerCase();
+            if (EXT.image.includes(ext)) return '<i class="fas fa-file-image text-purple-500"></i>';
+            if (EXT.video.includes(ext)) return '<i class="fas fa-file-video text-red-500"></i>';
+            if (EXT.pdf.includes(ext)) return '<i class="fas fa-file-pdf text-red-600"></i>';
+            if (EXT.office.includes(ext)) return '<i class="fas fa-file-word text-blue-700"></i>';
+            if (EXT.code.includes(ext)) return '<i class="fas fa-file-code text-gray-700"></i>';
+            return '<i class="fas fa-file text-gray-400"></i>';
         }
 
         function updateBreadcrumbs(path) {
             const container = document.getElementById('breadcrumbs');
             const parts = path.split('/').filter(p => p !== "");
-            let html = `<span class="cursor-pointer hover:text-blue-600" onclick="loadFolder('')">Root</span>`;
-            
-            let accumulatedPath = "";
-            parts.forEach((part, index) => {
-                accumulatedPath += (index === 0 ? "" : "/") + part;
-                html += ` <span class="mx-2 text-gray-300">/</span> `;
-                html += `<span class="cursor-pointer hover:text-blue-600" onclick="loadFolder('${accumulatedPath}')">${part}</span>`;
+            let html = `<span class="cursor-pointer hover:text-blue-600" onclick="loadFolder('')"><i class="fas fa-home"></i> Root</span>`;
+            let current = "";
+            parts.forEach(p => {
+                current += (current ? "/" : "") + p;
+                html += ` <span class="mx-2 text-gray-300">/</span> <span class="cursor-pointer hover:text-blue-600" onclick="loadFolder('${current}')">${p}</span>`;
             });
             container.innerHTML = html;
         }
 
-        function getParentPath(path) {
-            const parts = path.split('/');
-            parts.pop();
-            return parts.join('/');
+        function getParent(path) {
+            return path.split('/').slice(0, -1).join('/');
         }
 
         function escapeHTML(str) {
             return str.replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
         }
 
-        // Jalankan saat pertama kali dibuka
         loadFolder("");
     </script>
 </body>

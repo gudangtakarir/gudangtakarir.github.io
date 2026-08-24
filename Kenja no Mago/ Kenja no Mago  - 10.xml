@@ -1,0 +1,47 @@
+﻿<?xml version="1.0"?>
+<!-- <!DOCTYPE Chapters SYSTEM "matroskachapters.dtd"> -->
+<Chapters>
+  <EditionEntry>
+    <EditionUID>12260803308366195887</EditionUID>
+    <ChapterAtom>
+      <ChapterUID>2084544601112986039</ChapterUID>
+      <ChapterTimeStart>00:00:00.000000000</ChapterTimeStart>
+      <ChapterDisplay>
+        <ChapterString>Awalan</ChapterString>
+        <ChapterLanguage>eng</ChapterLanguage>
+      </ChapterDisplay>
+    </ChapterAtom>
+    <ChapterAtom>
+      <ChapterUID>5320800543103581108</ChapterUID>
+      <ChapterTimeStart>00:01:18.996000000</ChapterTimeStart>
+      <ChapterDisplay>
+        <ChapterString>Lagu Pembuka : "Ultimate☆MAGIC (アルティメット☆MAGIC)" by i☆Ris</ChapterString>
+        <ChapterLanguage>eng</ChapterLanguage>
+      </ChapterDisplay>
+    </ChapterAtom>
+    <ChapterAtom>
+      <ChapterUID>6668399505336460674</ChapterUID>
+      <ChapterTimeStart>00:02:49.044000000</ChapterTimeStart>
+      <ChapterDisplay>
+        <ChapterString>Bagian A</ChapterString>
+        <ChapterLanguage>eng</ChapterLanguage>
+      </ChapterDisplay>
+    </ChapterAtom>
+    <ChapterAtom>
+      <ChapterUID>11995548606328948115</ChapterUID>
+      <ChapterTimeStart>00:13:23.011000000</ChapterTimeStart>
+      <ChapterDisplay>
+        <ChapterString>Bagian B</ChapterString>
+        <ChapterLanguage>eng</ChapterLanguage>
+      </ChapterDisplay>
+    </ChapterAtom>
+    <ChapterAtom>
+      <ChapterUID>1921603323339445687</ChapterUID>
+      <ChapterTimeStart>00:22:09.996000000</ChapterTimeStart>
+      <ChapterDisplay>
+        <ChapterString>Lagu Penutup : "Kamikazari no Tenshi (髪飾りの天使)" by Megumi Nakajima</ChapterString>
+        <ChapterLanguage>eng</ChapterLanguage>
+      </ChapterDisplay>
+    </ChapterAtom>
+  </EditionEntry>
+</Chapters>

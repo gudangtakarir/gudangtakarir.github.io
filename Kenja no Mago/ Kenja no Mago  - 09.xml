@@ -1,0 +1,57 @@
+﻿<?xml version="1.0"?>
+<!-- <!DOCTYPE Chapters SYSTEM "matroskachapters.dtd"> -->
+<Chapters>
+  <EditionEntry>
+    <EditionFlagHidden>0</EditionFlagHidden>
+    <EditionFlagDefault>0</EditionFlagDefault>
+    <EditionUID>16279628332089103761</EditionUID>
+    <ChapterAtom>
+      <ChapterUID>14133911333005591434</ChapterUID>
+      <ChapterTimeStart>00:00:00.000000000</ChapterTimeStart>
+      <ChapterDisplay>
+        <ChapterString>Awalan</ChapterString>
+        <ChapterLanguage>eng</ChapterLanguage>
+      </ChapterDisplay>
+    </ChapterAtom>
+    <ChapterAtom>
+      <ChapterUID>13744782758335251883</ChapterUID>
+      <ChapterTimeStart>00:00:43.043000000</ChapterTimeStart>
+      <ChapterDisplay>
+        <ChapterString>Lagu Pembuka : "Ultimate☆MAGIC (アルティメット☆MAGIC)" by i☆Ris</ChapterString>
+        <ChapterLanguage>eng</ChapterLanguage>
+      </ChapterDisplay>
+    </ChapterAtom>
+    <ChapterAtom>
+      <ChapterUID>13886941931949045668</ChapterUID>
+      <ChapterTimeStart>00:02:13.008000000</ChapterTimeStart>
+      <ChapterDisplay>
+        <ChapterString>Bagian A</ChapterString>
+        <ChapterLanguage>eng</ChapterLanguage>
+      </ChapterDisplay>
+    </ChapterAtom>
+    <ChapterAtom>
+      <ChapterUID>10657284148728098950</ChapterUID>
+      <ChapterTimeStart>00:12:56.985000000</ChapterTimeStart>
+      <ChapterDisplay>
+        <ChapterString>Bagian B</ChapterString>
+        <ChapterLanguage>eng</ChapterLanguage>
+      </ChapterDisplay>
+    </ChapterAtom>
+    <ChapterAtom>
+      <ChapterUID>13021241305760939664</ChapterUID>
+      <ChapterTimeStart>00:20:55.838000000</ChapterTimeStart>
+      <ChapterDisplay>
+        <ChapterString>Lagu Penutup : "Kamikazari no Tenshi (髪飾りの天使)" by Megumi Nakajima</ChapterString>
+        <ChapterLanguage>eng</ChapterLanguage>
+      </ChapterDisplay>
+    </ChapterAtom>
+    <ChapterAtom>
+      <ChapterUID>11798326307934514104</ChapterUID>
+      <ChapterTimeStart>00:22:25.844000000</ChapterTimeStart>
+      <ChapterDisplay>
+        <ChapterString>Penutup</ChapterString>
+        <ChapterLanguage>eng</ChapterLanguage>
+      </ChapterDisplay>
+    </ChapterAtom>
+  </EditionEntry>
+</Chapters>

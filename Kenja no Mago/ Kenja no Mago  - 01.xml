@@ -1,0 +1,43 @@
+﻿<?xml version="1.0"?>
+<!-- <!DOCTYPE Chapters SYSTEM "matroskachapters.dtd"> -->
+<Chapters>
+  <EditionEntry>
+    <EditionUID>18099235433040653007</EditionUID>
+    <ChapterAtom>
+      <ChapterTimeStart>00:00:00.000000000</ChapterTimeStart>
+      <ChapterTimeEnd>00:01:32.990000000</ChapterTimeEnd>
+      <ChapterUID>7549159022299035459</ChapterUID>
+      <ChapterDisplay>
+        <ChapterString>Awalan - Kusonime</ChapterString>
+        <ChapterLanguage>und</ChapterLanguage>
+      </ChapterDisplay>
+    </ChapterAtom>
+    <ChapterAtom>
+      <ChapterTimeStart>00:01:35.990000000</ChapterTimeStart>
+      <ChapterTimeEnd>00:10:11.460000000</ChapterTimeEnd>
+      <ChapterUID>2699753043830481239</ChapterUID>
+      <ChapterDisplay>
+        <ChapterString>Bagian A - Kusonime</ChapterString>
+        <ChapterLanguage>und</ChapterLanguage>
+      </ChapterDisplay>
+    </ChapterAtom>
+    <ChapterAtom>
+      <ChapterTimeStart>00:10:16.470000000</ChapterTimeStart>
+      <ChapterTimeEnd>00:22:10.180000000</ChapterTimeEnd>
+      <ChapterUID>2262743693764867362</ChapterUID>
+      <ChapterDisplay>
+        <ChapterString>Bagian A - Kusonime</ChapterString>
+        <ChapterLanguage>und</ChapterLanguage>
+      </ChapterDisplay>
+    </ChapterAtom>
+    <ChapterAtom>
+      <ChapterTimeStart>00:22:10.200000000</ChapterTimeStart>
+      <ChapterTimeEnd>00:23:39.940000000</ChapterTimeEnd>
+      <ChapterUID>5948348597707561297</ChapterUID>
+      <ChapterDisplay>
+        <ChapterString>Lagu Pembuka : "Ultimate☆MAGIC (アルティメット☆MAGIC)" by i☆Ris - Kusonime</ChapterString>
+        <ChapterLanguage>und</ChapterLanguage>
+      </ChapterDisplay>
+    </ChapterAtom>
+  </EditionEntry>
+</Chapters>

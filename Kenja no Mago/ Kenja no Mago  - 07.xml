@@ -1,0 +1,49 @@
+﻿<?xml version="1.0"?>
+<!-- <!DOCTYPE Chapters SYSTEM "matroskachapters.dtd"> -->
+<Chapters>
+  <EditionEntry>
+    <EditionFlagHidden>0</EditionFlagHidden>
+    <EditionFlagDefault>0</EditionFlagDefault>
+    <EditionUID>6881721529831104140</EditionUID>
+    <ChapterAtom>
+      <ChapterUID>14723136088304741806</ChapterUID>
+      <ChapterTimeStart>00:00:00.000000000</ChapterTimeStart>
+      <ChapterDisplay>
+        <ChapterString>Awalan</ChapterString>
+        <ChapterLanguage>eng</ChapterLanguage>
+      </ChapterDisplay>
+    </ChapterAtom>
+    <ChapterAtom>
+      <ChapterUID>397698316775560356</ChapterUID>
+      <ChapterTimeStart>00:00:59.059000000</ChapterTimeStart>
+      <ChapterDisplay>
+        <ChapterString>Lagu Pembuka : "Ultimate☆MAGIC (アルティメット☆MAGIC)" by i☆Ris</ChapterString>
+        <ChapterLanguage>eng</ChapterLanguage>
+      </ChapterDisplay>
+    </ChapterAtom>
+    <ChapterAtom>
+      <ChapterUID>15634411312073370009</ChapterUID>
+      <ChapterTimeStart>00:02:29.024000000</ChapterTimeStart>
+      <ChapterDisplay>
+        <ChapterString>Bagian A</ChapterString>
+        <ChapterLanguage>eng</ChapterLanguage>
+      </ChapterDisplay>
+    </ChapterAtom>
+    <ChapterAtom>
+      <ChapterUID>7463383798520768657</ChapterUID>
+      <ChapterTimeStart>00:11:19.012000000</ChapterTimeStart>
+      <ChapterDisplay>
+        <ChapterString>Bagian A</ChapterString>
+        <ChapterLanguage>eng</ChapterLanguage>
+      </ChapterDisplay>
+    </ChapterAtom>
+    <ChapterAtom>
+      <ChapterUID>10327154923355574961</ChapterUID>
+      <ChapterTimeStart>00:22:09.662000000</ChapterTimeStart>
+      <ChapterDisplay>
+        <ChapterString>Penutup</ChapterString>
+        <ChapterLanguage>eng</ChapterLanguage>
+      </ChapterDisplay>
+    </ChapterAtom>
+  </EditionEntry>
+</Chapters>

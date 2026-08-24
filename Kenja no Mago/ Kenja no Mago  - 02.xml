@@ -1,0 +1,34 @@
+﻿<?xml version="1.0"?>
+<!-- <!DOCTYPE Chapters SYSTEM "matroskachapters.dtd"> -->
+<Chapters>
+  <EditionEntry>
+    <EditionUID>4310164415454332679</EditionUID>
+    <ChapterAtom>
+      <ChapterTimeStart>00:00:00.000000000</ChapterTimeStart>
+      <ChapterTimeEnd>00:09:33.580000000</ChapterTimeEnd>
+      <ChapterUID>6278289321417282827</ChapterUID>
+      <ChapterDisplay>
+        <ChapterString>Bagian A</ChapterString>
+        <ChapterLanguage>eng</ChapterLanguage>
+      </ChapterDisplay>
+    </ChapterAtom>
+    <ChapterAtom>
+      <ChapterTimeStart>00:09:38.590000000</ChapterTimeStart>
+      <ChapterTimeEnd>00:22:10.030000000</ChapterTimeEnd>
+      <ChapterUID>11243898454791785253</ChapterUID>
+      <ChapterDisplay>
+        <ChapterString>Bagian B</ChapterString>
+        <ChapterLanguage>eng</ChapterLanguage>
+      </ChapterDisplay>
+    </ChapterAtom>
+    <ChapterAtom>
+      <ChapterTimeStart>00:22:10.030000000</ChapterTimeStart>
+      <ChapterTimeEnd>00:23:40.040000000</ChapterTimeEnd>
+      <ChapterUID>350484292011130844</ChapterUID>
+      <ChapterDisplay>
+        <ChapterString>Lagu Penutup : "Kamikazari no Tenshi (髪飾りの天使)" by Megumi Nakajima</ChapterString>
+        <ChapterLanguage>eng</ChapterLanguage>
+      </ChapterDisplay>
+    </ChapterAtom>
+  </EditionEntry>
+</Chapters>

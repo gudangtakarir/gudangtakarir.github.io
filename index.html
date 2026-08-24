@@ -3,73 +3,146 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>File Explorer - GitHub Pages</title>
+    <title>GitHub File Explorer & Viewer</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
     <style>
-        .file-item:hover { background-color: #f3f4f6; }
+        .file-item:hover { background-color: #f9fafb; }
+        pre { border-radius: 0.5rem; max-height: 500px; overflow: auto; }
     </style>
 </head>
-<body class="bg-gray-50 p-4 md:p-10">
+<body class="bg-gray-100 min-h-screen p-4 md:p-8">
 
-    <div class="max-w-3xl mx-auto bg-white shadow-md rounded-lg overflow-hidden border border-gray-200">
-        <div class="bg-gray-800 p-4">
-            <h1 id="repo-title" class="text-white font-mono text-lg">Loading Repository...</h1>
+    <div class="max-w-4xl mx-auto">
+        <!-- Header & Breadcrumbs -->
+        <div class="bg-white rounded-t-xl border border-gray-200 p-4 shadow-sm">
+            <div id="breadcrumbs" class="flex items-center text-sm font-medium text-gray-500 overflow-x-auto whitespace-nowrap">
+                <!-- Breadcrumbs akan muncul di sini -->
+            </div>
         </div>
-        
-        <div id="file-list" class="divide-y divide-gray-200">
-            <!-- Daftar file akan muncul di sini -->
-            <div class="p-4 text-center text-gray-500">Memuat daftar file...</div>
+
+        <!-- Main Content (File List atau File Viewer) -->
+        <div class="bg-white border-x border-b border-gray-200 rounded-b-xl shadow-sm overflow-hidden">
+            <div id="content-area">
+                <div class="p-8 text-center text-gray-500 italic">Memuat data...</div>
+            </div>
         </div>
     </div>
 
+    <!-- Scripts untuk API, Rendering, dan Highlight -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/4.3.0/marked.min.js"></script>
+
     <script>
         // --- KONFIGURASI ---
-        const USERNAME = 'gudangtakarir'; // Ganti dengan username GitHub Anda
-        const REPO = 'gudangtakarir.github.io';     // Ganti dengan nama repositori Anda
-        // ------------------
+        const CONFIG = {
+            username: 'gudangtakarir', // Ganti dengan username Anda
+            repo: 'gudangtakarir.github.io',     // Ganti dengan nama repo Anda
+            branch: 'main'               // Biasanya 'main' atau 'master'
+        };
 
-        const fileListContainer = document.getElementById('file-list');
-        const repoTitle = document.getElementById('repo-title');
+        let currentPath = "";
 
-        repoTitle.innerText = `Index of /${REPO}`;
+        // Fungsi utama untuk memuat isi folder
+        async function loadFolder(path = "") {
+            currentPath = path;
+            updateBreadcrumbs(path);
+            const contentArea = document.getElementById('content-area');
+            contentArea.innerHTML = '<div class="p-8 text-center">Memproses...</div>';
 
-        async function fetchFiles() {
             try {
-                const response = await fetch(`https://api.github.com/repos/${USERNAME}/${REPO}/contents/`);
-                const items = await response.json();
+                const response = await fetch(`https://api.github.com/repos/${CONFIG.username}/${CONFIG.repo}/contents/${path}`);
+                const data = await response.json();
 
-                if (response.status !== 200) throw new Error(items.message);
+                let html = `<ul class="divide-y divide-gray-100">`;
+                
+                // Urutkan: Folder dulu baru File
+                data.sort((a, b) => (b.type === 'dir') - (a.type === 'dir'));
 
-                fileListContainer.innerHTML = '';
-
-                // Urutkan: Folder dulu, baru file
-                items.sort((a, b) => (b.type === 'dir') - (a.type === 'dir'));
-
-                items.forEach(item => {
-                    // Jangan tampilkan file index.html itu sendiri
-                    if (item.name === 'index.html') return;
+                data.forEach(item => {
+                    if (item.name === 'index.html' && path === "") return; // Sembunyikan index utama
 
                     const icon = item.type === 'dir' ? '📁' : '📄';
-                    const link = item.type === 'dir' 
-                        ? `https://${USERNAME}.github.io/${REPO}/${item.path}/` 
-                        : item.path;
+                    const action = item.type === 'dir' 
+                        ? `onclick="loadFolder('${item.path}')"` 
+                        : `onclick="viewFile('${item.path}', '${item.download_url}')"`;
 
-                    const row = `
-                        <a href="${link}" class="file-item flex items-center p-4 transition duration-150">
+                    html += `
+                        <li class="file-item p-4 flex items-center cursor-pointer transition" ${action}>
                             <span class="mr-3 text-xl">${icon}</span>
-                            <span class="text-blue-600 hover:underline font-medium">${item.name}</span>
-                            <span class="ml-auto text-xs text-gray-400 font-mono">${item.type.toUpperCase()}</span>
-                        </a>
-                    `;
-                    fileListContainer.innerHTML += row;
+                            <span class="text-blue-600 font-medium hover:underline">${item.name}</span>
+                            <span class="ml-auto text-xs text-gray-400 uppercase font-mono">${item.type}</span>
+                        </li>`;
                 });
+                html += `</ul>`;
+                contentArea.innerHTML = html;
 
             } catch (error) {
-                fileListContainer.innerHTML = `<div class="p-4 text-red-500">Error: ${error.message}. <br>Pastikan Username dan Nama Repo sudah benar di dalam kode.</div>`;
+                contentArea.innerHTML = `<div class="p-8 text-red-500 text-center text-sm">Gagal memuat: ${error.message}</div>`;
             }
         }
 
-        fetchFiles();
+        // Fungsi untuk melihat isi file
+        async function viewFile(path, downloadUrl) {
+            const contentArea = document.getElementById('content-area');
+            const ext = path.split('.').pop().toLowerCase();
+            updateBreadcrumbs(path);
+
+            contentArea.innerHTML = '<div class="p-8 text-center">Membaca isi file...</div>';
+
+            try {
+                const response = await fetch(downloadUrl);
+                const text = await response.text();
+
+                let renderedContent = "";
+                if (ext === 'md') {
+                    renderedContent = `<div class="prose max-w-none p-6">${marked.parse(text)}</div>`;
+                } else if (['jpg', 'png', 'gif', 'svg'].includes(ext)) {
+                    renderedContent = `<div class="flex justify-center p-6 bg-gray-50"><img src="${downloadUrl}" class="max-w-full shadow-lg rounded"></div>`;
+                } else {
+                    // Gunakan Prism untuk highlight kode
+                    renderedContent = `<pre class="m-4"><code class="language-${ext}">${escapeHTML(text)}</code></pre>`;
+                }
+
+                contentArea.innerHTML = `
+                    <div class="bg-gray-50 p-3 border-b border-gray-200 flex justify-between items-center">
+                        <span class="text-xs font-mono text-gray-500">${path}</span>
+                        <button onclick="loadFolder('${getParentPath(path)}')" class="text-xs bg-gray-200 hover:bg-gray-300 px-3 py-1 rounded">Kembali</button>
+                    </div>
+                    ${renderedContent}
+                `;
+                Prism.highlightAll();
+            } catch (error) {
+                contentArea.innerHTML = `<div class="p-8 text-red-500">Gagal membaca file.</div>`;
+            }
+        }
+
+        function updateBreadcrumbs(path) {
+            const container = document.getElementById('breadcrumbs');
+            const parts = path.split('/').filter(p => p !== "");
+            let html = `<span class="cursor-pointer hover:text-blue-600" onclick="loadFolder('')">Root</span>`;
+            
+            let accumulatedPath = "";
+            parts.forEach((part, index) => {
+                accumulatedPath += (index === 0 ? "" : "/") + part;
+                html += ` <span class="mx-2 text-gray-300">/</span> `;
+                html += `<span class="cursor-pointer hover:text-blue-600" onclick="loadFolder('${accumulatedPath}')">${part}</span>`;
+            });
+            container.innerHTML = html;
+        }
+
+        function getParentPath(path) {
+            const parts = path.split('/');
+            parts.pop();
+            return parts.join('/');
+        }
+
+        function escapeHTML(str) {
+            return str.replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+        }
+
+        // Jalankan saat pertama kali dibuka
+        loadFolder("");
     </script>
 </body>
 </html>

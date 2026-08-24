@@ -1,0 +1,22 @@
+name: Generate File List
+on: [push] # Berjalan otomatis setiap kali Anda upload file baru
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Generate JSON Tree
+        run: |
+          # Perintah ini akan melist semua file kecuali folder .git dan file tersembunyi
+          find . -maxdepth 10 -not -path '*/.*' > files.txt
+          node -e "const fs = require('fs'); const files = fs.readFileSync('files.txt', 'utf8').split('\n').filter(Boolean); fs.writeFileSync('tree.json', JSON.stringify(files));"
+
+      - name: Commit and Push
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git add tree.json
+          git commit -m "Update file list" || exit 0
+          git push
